@@ -1,0 +1,24 @@
+Cards
+	name
+	card set
+	type : {spell, minion, weapon}
+	class
+	description
+	score
+
+Spell
+	empty
+
+Minion
+	race
+	
+Weapon
+	empty
+
+
+
+
+Decks
+Players
+Tournaments
+Matches

@@ -3,8 +3,12 @@ Cards
 	card set
 	type : {spell, minion, weapon}
 	class
+	mechanics
 	description
 	score
+	
+Mechanics
+	name
 
 Spell
 	empty
@@ -14,11 +18,28 @@ Minion
 	
 Weapon
 	empty
-
-
-
-
+---------------------------------------------------------------
 Decks
+	class
+	name
+	cards
+	score
+---------------------------------------------------------------
 Players
+	name
+	country
+	decks
+	score
+---------------------------------------------------------------
 Tournaments
+	name
+	format
+	prize pool
+	score
+---------------------------------------------------------------
 Matches
+	player 1
+	deck 1
+	player 2
+	deck 2
+	outcome

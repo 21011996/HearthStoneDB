@@ -158,9 +158,9 @@ SELECT
   cards.card_description,
   set.set_name
 FROM cards
- JOIN in_deck on cards.card_id = in_deck.card_id
- JOIN decks on in_deck.deck_id = decks.deck_id
- JOIN set on cards.card_set_id = set.set_id
+  JOIN in_deck ON cards.card_id = in_deck.card_id
+  JOIN decks ON in_deck.deck_id = decks.deck_id
+  JOIN set ON cards.card_set_id = set.set_id
 WHERE decks.player_id = get_player_id(_player_name) AND decks.deck_name = _deck_name;
 $$ LANGUAGE 'sql';
 
@@ -184,12 +184,12 @@ CREATE TYPE achivment_type AS (
 CREATE OR REPLACE FUNCTION get_player_achivments(_player_name TEXT)
   RETURNS SETOF achivment_type AS $$
 DECLARE
-  _result        achivment_type;
-  _player_id     INTEGER;
-  _tournament_id INTEGER;
+  _result          achivment_type;
+  _player_id       INTEGER;
+  _tournament_id   INTEGER;
   _tournament_name TEXT;
-  _place         INTEGER;
-  _prize_pool INTEGER;
+  _place           INTEGER;
+  _prize_pool      INTEGER;
 BEGIN
   _player_id = get_player_id(_player_name);
   FOR _tournament_id, _place IN (SELECT
@@ -197,8 +197,12 @@ BEGIN
                                    place
                                  FROM participated
                                  WHERE player_id = _player_id) LOOP
-    _tournament_name = (SELECT tournament_name from tournament WHERE tournament_id = _tournament_id);
-    _prize_pool = (SELECT tournament_prize_pool from tournament WHERE _tournament_id = tournament_id);
+    _tournament_name = (SELECT tournament_name
+                        FROM tournament
+                        WHERE tournament_id = _tournament_id);
+    _prize_pool = (SELECT tournament_prize_pool
+                   FROM tournament
+                   WHERE _tournament_id = tournament_id);
     _result.tournament_name = _tournament_name;
     _result.place = _place;
     _result.prize_pool = _prize_pool;

@@ -23,7 +23,5 @@ CREATE INDEX heroes_class_index
 CREATE INDEX in_deck_card_id_index
   ON in_deck USING BTREE (card_id);
 
-CREATE INDEX players_score_index
-  ON players USING BTREE (player_score);
 CREATE INDEX players_country_index
-  ON players USING BTREE (player_country);
+  ON players USING BTREE (player_country); -- hash

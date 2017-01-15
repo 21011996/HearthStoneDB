@@ -1,3 +1,22 @@
+CREATE OR REPLACE FUNCTION get_cards_in_deck(_deck_id INTEGER)
+  RETURNS INTEGER AS $$
+DECLARE
+  _count    INTEGER;
+  _card_id  INTEGER;
+  _quantity INTEGER;
+BEGIN
+  _count = 0;
+  FOR _card_id, _quantity IN (SELECT
+                                card_id,
+                                quantity
+                              FROM in_deck
+                              WHERE deck_id = _deck_id) LOOP
+    _count = _count + _quantity;
+  END LOOP;
+  RETURN _count;
+END;
+$$ LANGUAGE 'plpgsql';
+
 CREATE OR REPLACE FUNCTION add_card_into_deck()
   RETURNS TRIGGER AS $$
 DECLARE
@@ -30,11 +49,20 @@ BEGIN
       RAISE EXCEPTION E'Illegal class card for this deck:%,%', _class_id, NEW.card_id;
     END IF;
 
+    IF (get_cards_in_deck(NEW.deck_id) + NEW.quantity > 30)
+    THEN
+      RAISE EXCEPTION E'Illegal number of cards in this deck:%', NEW.deck_id;
+    END IF;
+
     _add_score = NEW.quantity * _card_score;
   END IF;
 
   IF (TG_OP = 'UPDATE')
   THEN
+    IF (get_cards_in_deck(NEW.deck_id) + (NEW.quantity - OLD.quantity) > 30)
+    THEN
+      RAISE EXCEPTION E'Illegal number of cards in this deck:%', NEW.deck_id;
+    END IF;
     _add_score = (NEW.quantity - OLD.quantity) * _card_score;
   END IF;
 
@@ -70,6 +98,10 @@ DECLARE
   _deck_diff_1         INTEGER;
   _deck_diff_2         INTEGER;
 BEGIN
+  IF (get_cards_in_deck(NEW.player1_deck_id) <> 30 OR get_cards_in_deck(NEW.player2_deck_id) <> 30)
+  THEN
+    RAISE EXCEPTION E'Submitted unfinished decks:%,%', NEW.player1_deck_id, NEW.player2_deck_id;
+  END IF;
   SELECT
     player_id,
     deck_score
@@ -83,13 +115,17 @@ BEGIN
   WHERE deck_id = NEW.Player2_deck_id
   INTO _player_id_2, _player_2_deck_score;
 
+  IF (_player_id_1 = _player_id_2)
+  THEN
+    RAISE EXCEPTION E'Player can\'t play with himself:%', _player_id_1;
+  END IF;
   SELECT tournament_prize_pool
   FROM tournament
   WHERE tournament_id = NEW.tournament_id
   INTO _prize_pool_factor;
 
-  _deck_diff_1 = (_prize_pool_factor*1.0 / 200.0) * (_player_1_deck_score*1.0 / _player_2_deck_score*1.0);
-  _deck_diff_2 = (_prize_pool_factor*1.0 / 200.0) * (_player_2_deck_score*1.0 / _player_1_deck_score*1.0);
+  _deck_diff_1 = (_prize_pool_factor * 1.0 / 200.0) * (_player_1_deck_score * 1.0 / _player_2_deck_score * 1.0);
+  _deck_diff_2 = (_prize_pool_factor * 1.0 / 200.0) * (_player_2_deck_score * 1.0 / _player_1_deck_score * 1.0);
   IF (NEW.outcome = 'Player1Win')
   THEN
     _player_1_score_diff = _deck_diff_1;
@@ -117,7 +153,7 @@ $$ LANGUAGE 'plpgsql';
 DROP TRIGGER IF EXISTS match_add
 ON matches;
 CREATE TRIGGER match_add
-AFTER INSERT
+BEFORE INSERT
   ON matches
 FOR EACH ROW
 EXECUTE PROCEDURE add_match_into_matches();

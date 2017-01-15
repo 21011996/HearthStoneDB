@@ -88,8 +88,8 @@ BEGIN
   WHERE tournament_id = NEW.tournament_id
   INTO _prize_pool_factor;
 
-  _deck_diff_1 = (_prize_pool_factor / 200) * (_player_1_deck_score / _player_2_deck_score);
-  _deck_diff_2 = (_prize_pool_factor / 200) * (_player_2_deck_score / _player_1_deck_score);
+  _deck_diff_1 = (_prize_pool_factor*1.0 / 200.0) * (_player_1_deck_score*1.0 / _player_2_deck_score*1.0);
+  _deck_diff_2 = (_prize_pool_factor*1.0 / 200.0) * (_player_2_deck_score*1.0 / _player_1_deck_score*1.0);
   IF (NEW.outcome = 'Player1Win')
   THEN
     _player_1_score_diff = _deck_diff_1;

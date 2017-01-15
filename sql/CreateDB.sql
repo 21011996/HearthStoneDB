@@ -32,11 +32,16 @@ CREATE TABLE IF NOT EXISTS Mechanics (
   Mechanic_name TEXT UNIQUE NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS Country (
+  Country_id   INTEGER PRIMARY KEY,
+  Country_name TEXT UNIQUE NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS Players (
-  Player_id      INTEGER PRIMARY KEY,
-  Player_name    TEXT UNIQUE NOT NULL,
-  Player_country TEXT        NOT NULL,
-  Player_score   natural_int DEFAULT 0
+  Player_id         INTEGER PRIMARY KEY,
+  Player_name       TEXT UNIQUE NOT NULL,
+  Player_country_id INTEGER     NOT NULL REFERENCES Country (Country_id) ON DELETE CASCADE,
+  Player_score      natural_int DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS Cards (

@@ -24,4 +24,4 @@ CREATE INDEX in_deck_card_id_index
   ON in_deck USING BTREE (card_id);
 
 CREATE INDEX players_country_index
-  ON players USING BTREE (player_country); -- hash
+  ON players USING BTREE (player_country_id); -- hash

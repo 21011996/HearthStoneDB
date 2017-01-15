@@ -1,22 +1,3 @@
-CREATE OR REPLACE FUNCTION get_cards_in_deck(_deck_id INTEGER)
-  RETURNS INTEGER AS $$
-DECLARE
-  _count    INTEGER;
-  _card_id  INTEGER;
-  _quantity INTEGER;
-BEGIN
-  _count = 0;
-  FOR _card_id, _quantity IN (SELECT
-                                card_id,
-                                quantity
-                              FROM in_deck
-                              WHERE deck_id = _deck_id) LOOP
-    _count = _count + _quantity;
-  END LOOP;
-  RETURN _count;
-END;
-$$ LANGUAGE 'plpgsql';
-
 CREATE OR REPLACE FUNCTION add_card_into_deck()
   RETURNS TRIGGER AS $$
 DECLARE
@@ -71,6 +52,25 @@ BEGIN
   WHERE deck_id = NEW.deck_id;
 
   RETURN NEW;
+END;
+$$ LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION get_cards_in_deck(_deck_id INTEGER)
+  RETURNS INTEGER AS $$
+DECLARE
+  _count    INTEGER;
+  _card_id  INTEGER;
+  _quantity INTEGER;
+BEGIN
+  _count = 0;
+  FOR _card_id, _quantity IN (SELECT
+                                card_id,
+                                quantity
+                              FROM in_deck
+                              WHERE deck_id = _deck_id) LOOP
+    _count = _count + _quantity;
+  END LOOP;
+  RETURN _count;
 END;
 $$ LANGUAGE 'plpgsql';
 
@@ -211,16 +211,16 @@ ORDER BY players.player_score DESC;
 $$ LANGUAGE 'sql';
 
 
-CREATE TYPE achivment_type AS (
+CREATE TYPE achievement_type AS (
   tournament_name TEXT,
   place           INTEGER,
   prize_pool      INTEGER
 );
 -- Player name to achievements
-CREATE OR REPLACE FUNCTION get_player_achivments(_player_name TEXT)
-  RETURNS SETOF achivment_type AS $$
+CREATE OR REPLACE FUNCTION get_player_achievements(_player_name TEXT)
+  RETURNS SETOF achievement_type AS $$
 DECLARE
-  _result          achivment_type;
+  _result          achievement_type;
   _player_id       INTEGER;
   _tournament_id   INTEGER;
   _tournament_name TEXT;

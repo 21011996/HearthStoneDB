@@ -29,7 +29,6 @@ INSERT INTO in_deck (card_id, deck_id, quantity) VALUES
   (959, 2, 2),
   (64, 2, 2),
   (655, 2, 2),
-  (524, 2, 1),
   (89, 2, 2),
   (998, 2, 2),
   (573, 2, 2),

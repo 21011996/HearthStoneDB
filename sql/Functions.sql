@@ -170,6 +170,30 @@ FROM decks
 WHERE player_name = _player_name;
 $$ LANGUAGE 'sql';
 
+--get all mechanics from deck
+CREATE OR REPLACE FUNCTION get_all_mechanics_in_deck(_deck_id INTEGER)
+  RETURNS TABLE(mechanics TEXT) AS $$
+SELECT DISTINCT mechanic_name
+FROM decks
+  JOIN in_deck ON decks.deck_id = in_deck.deck_id
+  JOIN cards ON in_deck.card_id = cards.card_id
+  JOIN has_mechanic ON cards.card_id = has_mechanic.card_id
+  JOIN mechanics ON has_mechanic.mechanic_id = mechanics.mechanic_id
+WHERE decks.deck_id = _deck_id;
+$$ LANGUAGE 'sql';
+
+--get all sets from deck
+CREATE OR REPLACE FUNCTION get_all_sets_in_deck(_deck_id INTEGER)
+  RETURNS TABLE(set_name TEXT) AS $$
+SELECT DISTINCT set_name
+FROM decks
+  JOIN in_deck ON decks.deck_id = in_deck.deck_id
+  JOIN cards ON in_deck.card_id = cards.card_id
+  JOIN set ON cards.card_set_id = set.set_id
+WHERE decks.deck_id = _deck_id;
+$$ LANGUAGE 'sql';
+
+
 -- Player name to player_id
 CREATE OR REPLACE FUNCTION get_player_id(_player_name TEXT)
   RETURNS INTEGER AS $$
@@ -183,6 +207,73 @@ BEGIN
   RETURN id;
 END;
 $$ LANGUAGE 'plpgsql';
+
+-- Player name to player_id
+CREATE OR REPLACE FUNCTION get_deck_wins(_deck_id INTEGER)
+  RETURNS INTEGER AS $$
+DECLARE
+  _n_wins   INTEGER;
+  _match_id INTEGER;
+  _outcome  outcome_type;
+BEGIN
+  _n_wins = 0;
+  FOR _match_id, _outcome IN (SELECT
+                                match_id,
+                                outcome
+                              FROM matches
+                              WHERE player1_deck_id = _deck_id) LOOP
+    IF (_outcome = 'Player1Win')
+    THEN
+      _n_wins = _n_wins + 1;
+    END IF;
+  END LOOP;
+  FOR _match_id, _outcome IN (SELECT
+                                match_id,
+                                outcome
+                              FROM matches
+                              WHERE player2_deck_id = _deck_id) LOOP
+    IF (_outcome = 'Player2Win')
+    THEN
+      _n_wins = _n_wins + 1;
+    END IF;
+  END LOOP;
+  RETURN _n_wins;
+END;
+$$ LANGUAGE 'plpgsql';
+
+-- Player name to player_id
+CREATE OR REPLACE FUNCTION get_deck_loses(_deck_id INTEGER)
+  RETURNS INTEGER AS $$
+DECLARE
+  _n_loses  INTEGER;
+  _match_id INTEGER;
+  _outcome  outcome_type;
+BEGIN
+  _n_loses = 0;
+  FOR _match_id, _outcome IN (SELECT
+                                match_id,
+                                outcome
+                              FROM matches
+                              WHERE player1_deck_id = _deck_id) LOOP
+    IF (_outcome = 'Player2Win')
+    THEN
+      _n_loses = _n_loses + 1;
+    END IF;
+  END LOOP;
+  FOR _match_id, _outcome IN (SELECT
+                                match_id,
+                                outcome
+                              FROM matches
+                              WHERE player2_deck_id = _deck_id) LOOP
+    IF (_outcome = 'Player1Win')
+    THEN
+      _n_loses = _n_loses + 1;
+    END IF;
+  END LOOP;
+  RETURN _n_loses;
+END;
+$$ LANGUAGE 'plpgsql';
+
 
 --get all cards in deck
 CREATE OR REPLACE FUNCTION get_all_deck_cards(_player_name TEXT, _deck_name TEXT)

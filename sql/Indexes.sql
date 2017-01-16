@@ -1,27 +1,29 @@
+CREATE INDEX mechanics_name_index
+  ON mechanics USING BTREE (mechanic_name);
+
 CREATE INDEX card_name_index
-  ON cards USING BTREE (card_name); -- hash
-CREATE INDEX card_set_index
-  ON cards USING BTREE (card_set_id); -- hash
+  ON cards USING BTREE (card_name);
 
 CREATE INDEX minions_race_index
-  ON minions USING BTREE (race); -- hash
+  ON minions USING BTREE (race);
 
 CREATE INDEX deck_name_index
-  ON decks USING BTREE (deck_name); -- hash
-CREATE INDEX deck_class_id_index
-  ON decks USING BTREE (class_id); -- hash
+  ON decks USING BTREE (deck_name);
 
-CREATE INDEX participated_index
-  ON participated USING BTREE (tournament_id);
+CREATE INDEX has_mechanic_cardid_mechanic_index
+  ON has_mechanic USING BTREE (card_id, mechanic_id);
 
-CREATE INDEX has_mechanic_card_id_index
-  ON has_mechanic USING BTREE (card_id);
+CREATE INDEX has_mechanic_mechanic_cardid_index
+  ON has_mechanic USING BTREE (mechanic_id, card_id);
+
+CREATE INDEX in_deck_cardid_deckid_index
+  ON in_deck USING BTREE (card_id, deck_id);
+
+CREATE INDEX in_deck_deckid_cardid_index
+  ON in_deck USING BTREE (deck_id, card_id);
 
 CREATE INDEX heroes_class_index
-  ON class USING BTREE (class_name); -- hash
+  ON class USING BTREE (class_name);
 
-CREATE INDEX in_deck_card_id_index
-  ON in_deck USING BTREE (card_id);
-
-CREATE INDEX players_country_index
-  ON players USING BTREE (player_country_id); -- hash
+CREATE INDEX country_index
+  ON country USING BTREE (country_name);

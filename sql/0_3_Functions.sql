@@ -25,6 +25,10 @@ BEGIN
     FROM cards
     WHERE card_id = NEW.card_id
     INTO _card_class_id;
+    IF (NEW.quantity > 2 OR NEW.quantity < 1)
+      THEN
+      RAISE EXCEPTION E'Illegal quentity of card % - %', NEW.card_id, NEW.quantity;
+    END IF;
     IF (_card_class_id <> _class_id AND _card_class_id <> 3)
     THEN
       RAISE EXCEPTION E'Illegal class card for this deck:%,%', _class_id, NEW.card_id;
@@ -40,6 +44,10 @@ BEGIN
 
   IF (TG_OP = 'UPDATE')
   THEN
+    IF (NEW.quantity > 2 OR NEW.quantity < 1)
+      THEN
+      RAISE EXCEPTION E'Illegal quentity of card % - %', NEW.card_id, NEW.quantity;
+    END IF;
     IF (get_cards_in_deck(NEW.deck_id) + (NEW.quantity - OLD.quantity) > 30)
     THEN
       RAISE EXCEPTION E'Illegal number of cards in this deck:%', NEW.deck_id;
@@ -277,7 +285,7 @@ $$ LANGUAGE 'plpgsql';
 
 --get all cards in deck
 CREATE OR REPLACE FUNCTION get_all_deck_cards(_player_name TEXT, _deck_name TEXT)
-  RETURNS TABLE(quantity qnt_int, card_id INTEGER, card_name TEXT, description TEXT, set TEXT) AS $$
+  RETURNS TABLE(quantity INTEGER, card_id INTEGER, card_name TEXT, description TEXT, set TEXT) AS $$
 SELECT
   in_deck.quantity,
   cards.card_id,

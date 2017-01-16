@@ -15,7 +15,6 @@ CREATE TYPE outcome_type AS ENUM (
 );
 
 CREATE DOMAIN natural_int AS INTEGER CHECK (VALUE >= 0);
-CREATE DOMAIN qnt_int AS INTEGER CHECK (VALUE > 0 AND VALUE <= 2);
 
 CREATE TABLE IF NOT EXISTS Class (
   Class_id   INTEGER PRIMARY KEY,
@@ -120,7 +119,7 @@ CREATE TABLE IF NOT EXISTS Has_mechanic (
 CREATE TABLE IF NOT EXISTS In_deck (
   Card_id  INTEGER NOT NULL REFERENCES Cards (Card_id) ON DELETE CASCADE,
   Deck_id  INTEGER NOT NULL REFERENCES Decks (Deck_id) ON DELETE CASCADE,
-  Quantity qnt_int NOT NULL,
+  Quantity INTEGER NOT NULL,
   PRIMARY KEY (Card_id, Deck_id)
 );
 
@@ -135,7 +134,8 @@ CREATE TABLE IF NOT EXISTS Participated (
   Player_id     INTEGER NOT NULL REFERENCES Players (Player_id) ON DELETE CASCADE,
   Tournament_id INTEGER NOT NULL REFERENCES Tournament (Tournament_id) ON DELETE CASCADE,
   Place         INTEGER NOT NULL,
-  PRIMARY KEY (Player_id, Tournament_id)
+  PRIMARY KEY (Player_id, Tournament_id),
+  UNIQUE (Tournament_id, Place)
 );
 
 CREATE TABLE IF NOT EXISTS Matches (
@@ -144,4 +144,8 @@ CREATE TABLE IF NOT EXISTS Matches (
   Player1_deck_id INTEGER      NOT NULL REFERENCES Decks (Deck_id) ON DELETE CASCADE,
   Player2_deck_id INTEGER      NOT NULL REFERENCES Decks (Deck_id) ON DELETE CASCADE,
   Outcome         outcome_type NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Standard_rotation (
+  Set_id INTEGER PRIMARY KEY REFERENCES Set
 );

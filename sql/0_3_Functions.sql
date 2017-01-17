@@ -1,3 +1,8 @@
+/*
+  Unwrapped sql queries from functions
+  Added quantity check in add_card_into_deck() trigger
+  in E'text' E enables escape characters such as \n \t.
+ */
 CREATE OR REPLACE FUNCTION add_card_into_deck()
   RETURNS TRIGGER AS $$
 DECLARE
@@ -26,7 +31,7 @@ BEGIN
     WHERE card_id = NEW.card_id
     INTO _card_class_id;
     IF (NEW.quantity > 2 OR NEW.quantity < 1)
-      THEN
+    THEN
       RAISE EXCEPTION E'Illegal quentity of card % - %', NEW.card_id, NEW.quantity;
     END IF;
     IF (_card_class_id <> _class_id AND _card_class_id <> 3)
@@ -45,7 +50,7 @@ BEGIN
   IF (TG_OP = 'UPDATE')
   THEN
     IF (NEW.quantity > 2 OR NEW.quantity < 1)
-      THEN
+    THEN
       RAISE EXCEPTION E'Illegal quentity of card % - %', NEW.card_id, NEW.quantity;
     END IF;
     IF (get_cards_in_deck(NEW.deck_id) + (NEW.quantity - OLD.quantity) > 30)
@@ -166,41 +171,6 @@ BEFORE INSERT
 FOR EACH ROW
 EXECUTE PROCEDURE add_match_into_matches();
 
---get all deck names from player
-CREATE OR REPLACE FUNCTION get_all_players_decks(_player_name TEXT)
-  RETURNS TABLE(deck_id INTEGER, deck_name TEXT, deck_score natural_int) AS $$
-SELECT
-  deck_id,
-  deck_name,
-  deck_score
-FROM decks
-  NATURAL JOIN players
-WHERE player_name = _player_name;
-$$ LANGUAGE 'sql';
-
---get all mechanics from deck
-CREATE OR REPLACE FUNCTION get_all_mechanics_in_deck(_deck_id INTEGER)
-  RETURNS TABLE(mechanics TEXT) AS $$
-SELECT DISTINCT mechanic_name
-FROM decks
-  JOIN in_deck ON decks.deck_id = in_deck.deck_id
-  JOIN cards ON in_deck.card_id = cards.card_id
-  JOIN has_mechanic ON cards.card_id = has_mechanic.card_id
-  JOIN mechanics ON has_mechanic.mechanic_id = mechanics.mechanic_id
-WHERE decks.deck_id = _deck_id;
-$$ LANGUAGE 'sql';
-
---get all sets from deck
-CREATE OR REPLACE FUNCTION get_all_sets_in_deck(_deck_id INTEGER)
-  RETURNS TABLE(set_name TEXT) AS $$
-SELECT DISTINCT set_name
-FROM decks
-  JOIN in_deck ON decks.deck_id = in_deck.deck_id
-  JOIN cards ON in_deck.card_id = cards.card_id
-  JOIN set ON cards.card_set_id = set.set_id
-WHERE decks.deck_id = _deck_id;
-$$ LANGUAGE 'sql';
-
 
 -- Player name to player_id
 CREATE OR REPLACE FUNCTION get_player_id(_player_name TEXT)
@@ -216,7 +186,7 @@ BEGIN
 END;
 $$ LANGUAGE 'plpgsql';
 
--- Player name to player_id
+-- Deck id to wins
 CREATE OR REPLACE FUNCTION get_deck_wins(_deck_id INTEGER)
   RETURNS INTEGER AS $$
 DECLARE
@@ -249,7 +219,7 @@ BEGIN
 END;
 $$ LANGUAGE 'plpgsql';
 
--- Player name to player_id
+-- Deck id to loses
 CREATE OR REPLACE FUNCTION get_deck_loses(_deck_id INTEGER)
   RETURNS INTEGER AS $$
 DECLARE
@@ -281,33 +251,6 @@ BEGIN
   RETURN _n_loses;
 END;
 $$ LANGUAGE 'plpgsql';
-
-
---get all cards in deck
-CREATE OR REPLACE FUNCTION get_all_deck_cards(_player_name TEXT, _deck_name TEXT)
-  RETURNS TABLE(quantity INTEGER, card_id INTEGER, card_name TEXT, description TEXT, set TEXT) AS $$
-SELECT
-  in_deck.quantity,
-  cards.card_id,
-  cards.card_name,
-  cards.card_description,
-  set.set_name
-FROM cards
-  JOIN in_deck ON cards.card_id = in_deck.card_id
-  JOIN decks ON in_deck.deck_id = decks.deck_id
-  JOIN set ON cards.card_set_id = set.set_id
-WHERE decks.player_id = get_player_id(_player_name) AND decks.deck_name = _deck_name;
-$$ LANGUAGE 'sql';
-
-CREATE OR REPLACE FUNCTION get_rankings_list()
-  RETURNS TABLE(player_id INTEGER, player_name TEXT, player_score natural_int) AS $$
-SELECT
-  players.player_id,
-  players.player_name,
-  players.player_score
-FROM players
-ORDER BY players.player_score DESC;
-$$ LANGUAGE 'sql';
 
 
 CREATE TYPE achievement_type AS (
